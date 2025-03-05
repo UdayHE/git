@@ -12,7 +12,7 @@ public class CommandRegistry {
     private final Map<String, Command> commands = new HashMap<>();
 
     public CommandRegistry() {
-        commands.put(git.enums.Command.INIT.getValue(), new InitCommand());
+        commands.put(git.enums.Command.INIT.getValue(), new Init());
     }
 
     public void execute(String command) {
