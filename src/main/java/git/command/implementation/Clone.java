@@ -6,18 +6,17 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.*;
-import java.util.zip.InflaterInputStream;
 
 public class Clone implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
-//        // Validate arguments
-//        if (args.length != 2) {
-//            throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
-//        }
+        // Validate arguments
+        if (args.length != 2) {
+            throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
+        }
 
-        String repoUrl = args[0];
+        String repoUrl = args[0].replaceAll("/$", ""); // Remove trailing slash if present
         String destinationDir = args[1];
 
         // Create the target directory
@@ -34,8 +33,10 @@ public class Clone implements Command {
     }
 
     private void fetchObjects(String repoUrl, Path destination) throws IOException {
-        // Fetch info/refs to discover available refs
+        // Ensure the URL is correctly formed
         String refsUrl = repoUrl + "/info/refs?service=git-upload-pack";
+        System.out.println("Fetching refs from: " + refsUrl);
+
         HttpURLConnection connection = (HttpURLConnection) new URL(refsUrl).openConnection();
         connection.setRequestProperty("User-Agent", "Git/2.30");
         connection.setRequestProperty("Accept", "*/*");
@@ -50,7 +51,7 @@ public class Clone implements Command {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.contains("refs/heads/main")) {
+                if (line.contains("refs/heads/main") || line.contains("refs/heads/master")) {
                     String commitHash = line.split(" ")[0];
                     System.out.println("Found HEAD commit: " + commitHash);
                     fetchPackfile(repoUrl, destination, commitHash);
@@ -58,12 +59,14 @@ public class Clone implements Command {
                 }
             }
         }
-        throw new IOException("Could not find main branch in repository.");
+        throw new IOException("Could not find main or master branch in repository.");
     }
 
     private void fetchPackfile(String repoUrl, Path destination, String commitHash) throws IOException {
         // Send a request to download the packfile from the remote repository
         String packUrl = repoUrl + "/git-upload-pack";
+        System.out.println("Fetching packfile from: " + packUrl);
+
         HttpURLConnection connection = (HttpURLConnection) new URL(packUrl).openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("User-Agent", "Git/2.30");
@@ -80,7 +83,7 @@ public class Clone implements Command {
         }
 
         // Process and store packfile
-        try (InputStream input = new InflaterInputStream(connection.getInputStream())) {
+        try (InputStream input = connection.getInputStream()) {
             Path objectsPath = destination.resolve(".git/objects");
             Files.createDirectories(objectsPath);
 
