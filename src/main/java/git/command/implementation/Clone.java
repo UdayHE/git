@@ -114,6 +114,10 @@ public class Clone implements Command {
                 packData.write(buffer, 0, bytesRead);
             }
 
+            if (packData.size() == 0) {
+                throw new IOException("Received empty packfile. Possible server error or missing objects.");
+            }
+
             processPackfile(destination, packData.toByteArray());
         }
     }
@@ -136,13 +140,24 @@ public class Clone implements Command {
             int objectCount = dataInputStream.readInt();
             System.out.println("Packfile Version: " + version + ", Objects: " + objectCount);
 
+            if (objectCount <= 0) {
+                throw new IOException("Packfile contains zero objects.");
+            }
+
             for (int i = 0; i < objectCount; i++) {
+                if (dataInputStream.available() < 2) {
+                    throw new EOFException("Unexpected end of packfile while reading objects.");
+                }
+
                 byte typeAndSize = dataInputStream.readByte();
                 int type = (typeAndSize >> 4) & 0b111;
                 int size = typeAndSize & 0b1111;
 
                 ByteArrayOutputStream objectData = new ByteArrayOutputStream();
                 for (int j = 0; j < size; j++) {
+                    if (dataInputStream.available() == 0) {
+                        throw new EOFException("Unexpected end of file while reading object data.");
+                    }
                     objectData.write(dataInputStream.readByte());
                 }
 
