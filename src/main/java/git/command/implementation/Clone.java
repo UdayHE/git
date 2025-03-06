@@ -11,12 +11,19 @@ public class Clone implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
+        // Debug log: print received arguments
+        System.out.println("Received arguments count: " + args.length);
+        for (int i = 0; i < args.length; i++) {
+            System.out.println("Arg[" + i + "]: " + args[i]);
+        }
+
         // Validate arguments
-        if (args.length != 2) {
+        if (args.length < 2) {
+            System.err.println("Error: Insufficient arguments provided.");
             throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
         }
 
-        String repoUrl = args[0].replaceAll("/$", ""); // Remove trailing slash if present
+        String repoUrl = args[0].replaceAll("/$", ""); // Remove trailing slash
         String destinationDir = args[1];
 
         // Create the target directory
