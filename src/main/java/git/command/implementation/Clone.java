@@ -6,7 +6,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 public class Clone implements Command {
 
@@ -102,7 +101,8 @@ public class Clone implements Command {
             throw new IOException("Failed to fetch packfile: HTTP " + connection.getResponseCode());
         }
 
-        try (InputStream input = new InflaterInputStream(connection.getInputStream())) {
+        // ✅ Read raw packfile instead of InflaterInputStream
+        try (InputStream input = connection.getInputStream()) {
             Path objectsPath = destination.resolve(".git/objects");
             Files.createDirectories(objectsPath);
 
@@ -113,35 +113,44 @@ public class Clone implements Command {
                 packData.write(buffer, 0, bytesRead);
             }
 
-            unpackPackfile(destination, packData.toByteArray());
+            processPackfile(destination, packData.toByteArray());
         }
     }
 
-    private void unpackPackfile(Path destination, byte[] packData) throws IOException {
+    private void processPackfile(Path destination, byte[] packData) throws IOException {
         Path objectsPath = destination.resolve(".git/objects");
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(packData);
-             InflaterInputStream inflater = new InflaterInputStream(inputStream);
-             DataInputStream dataInputStream = new DataInputStream(inflater)) {
+             DataInputStream dataInputStream = new DataInputStream(inputStream)) {
 
-            while (dataInputStream.available() > 0) {
-                byte[] objectHeader = new byte[2];
-                dataInputStream.readFully(objectHeader);
+            byte[] header = new byte[4];
+            dataInputStream.readFully(header);
+            String headerStr = new String(header);
+            if (!"PACK".equals(headerStr)) {
+                throw new IOException("Invalid packfile format: missing PACK header.");
+            }
 
-                int type = objectHeader[0] >> 4;
-                int size = objectHeader[1] & 0x7F;
+            // Read version and number of objects
+            int version = dataInputStream.readInt();
+            int objectCount = dataInputStream.readInt();
+            System.out.println("Packfile Version: " + version + ", Objects: " + objectCount);
+
+            for (int i = 0; i < objectCount; i++) {
+                byte typeAndSize = dataInputStream.readByte();
+                int type = (typeAndSize >> 4) & 0b111;
+                int size = typeAndSize & 0b1111;
 
                 ByteArrayOutputStream objectData = new ByteArrayOutputStream();
-                for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
                     objectData.write(dataInputStream.readByte());
                 }
 
                 String objectHash = computeSHA1(objectData.toByteArray());
                 storeObject(objectsPath, objectHash, objectData.toByteArray());
+
+                System.out.println("Stored Git object: " + objectHash + " (Type: " + type + ")");
             }
         }
-
-        System.out.println("Packfile unpacked successfully.");
     }
 
     private void storeObject(Path objectsPath, String hash, byte[] data) throws IOException {
