@@ -1,7 +1,6 @@
 package git.command.implementation;
 
 import git.command.Command;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -18,13 +17,17 @@ public class Clone implements Command {
         }
 
         // Validate arguments
-        if (args.length < 2) {
+        if (args.length < 3) {
             System.err.println("Error: Insufficient arguments provided.");
             throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
         }
 
-        String repoUrl = args[0].replaceAll("/$", ""); // Remove trailing slash
-        String destinationDir = args[1];
+        String repoUrl = args[1].replaceAll("/$", ""); // Fix: Assign the correct URL
+        String destinationDir = args[2];
+
+        // Debugging to ensure URL is correct
+        System.out.println("Repository URL: " + repoUrl);
+        System.out.println("Destination Directory: " + destinationDir);
 
         // Create the target directory
         Path targetPath = Paths.get(destinationDir);
@@ -42,7 +45,7 @@ public class Clone implements Command {
     private void fetchObjects(String repoUrl, Path destination) throws IOException {
         // Ensure the URL is correctly formed
         String refsUrl = repoUrl + "/info/refs?service=git-upload-pack";
-        System.out.println("Fetching refs from: " + refsUrl);
+        System.out.println("Fetching refs from: " + refsUrl); // Debugging URL output
 
         HttpURLConnection connection = (HttpURLConnection) new URL(refsUrl).openConnection();
         connection.setRequestProperty("User-Agent", "Git/2.30");
@@ -72,7 +75,7 @@ public class Clone implements Command {
     private void fetchPackfile(String repoUrl, Path destination, String commitHash) throws IOException {
         // Send a request to download the packfile from the remote repository
         String packUrl = repoUrl + "/git-upload-pack";
-        System.out.println("Fetching packfile from: " + packUrl);
+        System.out.println("Fetching packfile from: " + packUrl); // Debugging URL output
 
         HttpURLConnection connection = (HttpURLConnection) new URL(packUrl).openConnection();
         connection.setRequestMethod("POST");
