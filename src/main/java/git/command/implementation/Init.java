@@ -1,4 +1,6 @@
-package git.command;
+package git.command.implementation;
+
+import git.command.Command;
 
 import java.io.File;
 import java.io.IOException;

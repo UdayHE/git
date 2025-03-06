@@ -1,5 +1,10 @@
 package git.command;
 
+import git.command.implementation.CatFile;
+import git.command.implementation.HashObject;
+import git.command.implementation.Init;
+import git.command.implementation.LsTree;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -15,6 +20,7 @@ public class CommandRegistry {
         commands.put(git.enums.Command.INIT.getValue(), new Init());
         commands.put(git.enums.Command.CAT_FILE.getValue(), new CatFile());
         commands.put(git.enums.Command.HASH_OBJECT.getValue(), new HashObject());
+        commands.put(git.enums.Command.LS_TREE.getValue(), new LsTree());
     }
 
     public void execute(String[] args) throws Exception {
