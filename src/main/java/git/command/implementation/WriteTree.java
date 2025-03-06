@@ -15,10 +15,14 @@ public class WriteTree implements Command {
     private static final Logger log = Logger.getLogger(WriteTree.class.getName());
 
     @Override
-    public void execute(String[] args) throws Exception {
-        File currentDir = new File(".");
-        String treeHash = writeTree(currentDir);
-        System.out.println(treeHash);
+    public void execute(String[] args) {
+        try {
+            File currentDir = new File(".");
+            String treeHash = writeTree(currentDir);
+            System.out.println(treeHash);
+        } catch (Exception e) {
+            log.severe("Error executing WriteTree: " + e.getMessage());
+        }
     }
 
     private String writeTree(File directory) throws IOException {
@@ -29,94 +33,63 @@ public class WriteTree implements Command {
         for (File file : Objects.requireNonNull(directory.listFiles())) {
             if (file.getName().equals(".git")) continue; // Ignore .git directory
 
-            if (file.isFile()) {
-                String fileHash = hashAndStoreBlob(file);
-                entries.add(serializeEntry("100644", file.getName(), fileHash));
-            } else if (file.isDirectory()) {
-                String treeHash = writeTree(file);
-                entries.add(serializeEntry("40000", file.getName(), treeHash));
+            String hash = file.isFile() ? hashAndStoreBlob(file) : (file.isDirectory() ? writeTree(file) : null);
+            if (hash != null) {
+                String mode = file.isFile() ? "100644" : "40000";
+                entries.add(serializeEntry(mode, file.getName(), hash));
             }
         }
 
-        // Sort entries using raw bytes (Git sorts lexicographically)
-        entries.sort((a, b) -> {
-            // Find the space byte (0x20) after the mode
-            int aSpace = -1;
-            for (int i = 0; i < a.length; i++) {
-                if (a[i] == ' ') {
-                    aSpace = i;
-                    break;
-                }
-            }
-
-            // Find the null byte (0x00) after the name
-            int aNull = aSpace + 1;
-            while (aNull < a.length && a[aNull] != 0) {
-                aNull++;
-            }
-
-            // Do the same for b
-            int bSpace = -1;
-            for (int i = 0; i < b.length; i++) {
-                if (b[i] == ' ') {
-                    bSpace = i;
-                    break;
-                }
-            }
-
-            int bNull = bSpace + 1;
-            while (bNull < b.length && b[bNull] != 0) {
-                bNull++;
-            }
-
-            // Extract name bytes from both entries
-            byte[] aName = Arrays.copyOfRange(a, aSpace + 1, aNull);
-            byte[] bName = Arrays.copyOfRange(b, bSpace + 1, bNull);
-
-            return Arrays.compare(aName, bName);
-        });
+        // Sort entries using raw bytes
+        entries.sort(Comparator.comparingInt(this::getNameStart));
 
         // Compute the tree object byte size
         int totalSize = entries.stream().mapToInt(e -> e.length).sum();
         byte[] header = ("tree " + totalSize + "\0").getBytes();
 
         // Merge header and entries
-        ByteArrayOutputStream treeStream = new ByteArrayOutputStream();
-        treeStream.write(header);
-        for (byte[] entry : entries) {
-            treeStream.write(entry);
-        }
-        byte[] treeData = treeStream.toByteArray();
+        try (ByteArrayOutputStream treeStream = new ByteArrayOutputStream()) {
+            treeStream.write(header);
+            for (byte[] entry : entries) {
+                treeStream.write(entry);
+            }
+            byte[] treeData = treeStream.toByteArray();
 
-        // Compute hash and store tree object
-        String treeHash = computeSHA1(treeData);
-        storeObject(treeHash, treeData);
-        return treeHash;
+            // Compute hash and store tree object
+            String treeHash = computeSHA1(treeData);
+            storeObject(treeHash, treeData);
+            return treeHash;
+        }
+    }
+
+    private int getNameStart(byte[] entry) {
+        int spaceIndex = indexOf(entry, ' ');
+        return indexOf(entry, 0, spaceIndex + 1); // Index of the null byte
     }
 
     private byte[] serializeEntry(String mode, String name, String hash) {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             output.write((mode + " " + name + "\0").getBytes());
             output.write(hexToBinary(hash)); // Convert hash to binary
+            return output.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("Error serializing entry", e);
         }
-        return output.toByteArray();
     }
 
     private String hashAndStoreBlob(File file) throws IOException {
         byte[] content = Files.readAllBytes(file.toPath());
         byte[] header = ("blob " + content.length + "\0").getBytes();
 
-        ByteArrayOutputStream blobStream = new ByteArrayOutputStream();
-        blobStream.write(header);
-        blobStream.write(content);
-        byte[] blobData = blobStream.toByteArray();
+        try (ByteArrayOutputStream blobStream = new ByteArrayOutputStream()) {
+            blobStream.write(header);
+            blobStream.write(content);
+            byte[] blobData = blobStream.toByteArray();
 
-        String blobHash = computeSHA1(blobData);
-        storeObject(blobHash, blobData);
-        return blobHash;
+            String blobHash = computeSHA1(blobData);
+            storeObject(blobHash, blobData);
+            return blobHash;
+        }
     }
 
     private String computeSHA1(byte[] data) {
@@ -154,5 +127,23 @@ public class WriteTree implements Command {
             hex.append(String.format("%02x", b));
         }
         return hex.toString();
+    }
+
+    private int indexOf(byte[] array, char value) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == value) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int indexOf(byte[] array, int fromIndex, int endIndex) {
+        for (int i = fromIndex; i < endIndex; i++) {
+            if (array[i] == 0) {
+                return i;
+            }
+        }
+        return endIndex; // Return endIndex if not found
     }
 }
