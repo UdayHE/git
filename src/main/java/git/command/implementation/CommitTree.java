@@ -66,8 +66,6 @@ public class CommitTree implements Command {
         return commitContent.toString();
     }
 
-import java.util.zip.DeflaterOutputStream;
-
     private String writeCommitObject(String content) {
         try {
             // 1. Prepare Git object header: "commit <size>\0"
