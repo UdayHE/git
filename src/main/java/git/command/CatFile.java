@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
 
@@ -19,9 +20,8 @@ public class CatFile implements Command {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(new InflaterInputStream(new FileInputStream(path))))) {
                 String line = reader.readLine();
                 System.out.print(line.substring(line.indexOf('\0') + 1));
-                while ((line = reader.readLine()) != null) {
-                    System.out.print(line);
-                }
+                while ((line = reader.readLine()) != null)
+                    log.log(Level.INFO,line);
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
