@@ -6,10 +6,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
 
@@ -24,8 +21,9 @@ public class WriteTree implements Command {
         System.out.println(treeHash);
     }
 
-    private String writeTree(File directory) throws IOException, NoSuchAlgorithmException {
+    private String writeTree(File directory) throws IOException {
         if (!directory.isDirectory()) return null;
+
         List<byte[]> entries = new ArrayList<>();
 
         for (File file : Objects.requireNonNull(directory.listFiles())) {
@@ -40,14 +38,10 @@ public class WriteTree implements Command {
             }
         }
 
-        // Sort entries by file name
-        entries.sort((a, b) -> {
-            String nameA = new String(a).split("\0")[1];
-            String nameB = new String(b).split("\0")[1];
-            return nameA.compareTo(nameB);
-        });
+        // Sort entries using raw bytes (Git sorts lexicographically)
+        entries.sort(Comparator.comparing(a -> Arrays.copyOfRange(a, 0, a.length - 20), Arrays::compare));
 
-        // Compute tree object byte size
+        // Compute the tree object byte size
         int totalSize = entries.stream().mapToInt(e -> e.length).sum();
         byte[] header = ("tree " + totalSize + "\0").getBytes();
 
@@ -65,7 +59,6 @@ public class WriteTree implements Command {
         return treeHash;
     }
 
-
     private byte[] serializeEntry(String mode, String name, String hash) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
@@ -77,7 +70,7 @@ public class WriteTree implements Command {
         return output.toByteArray();
     }
 
-    private String hashAndStoreBlob(File file) throws IOException, NoSuchAlgorithmException {
+    private String hashAndStoreBlob(File file) throws IOException {
         byte[] content = Files.readAllBytes(file.toPath());
         byte[] header = ("blob " + content.length + "\0").getBytes();
 
