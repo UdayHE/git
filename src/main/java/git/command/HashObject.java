@@ -29,7 +29,7 @@ public class HashObject implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
-        if (args.length != 2 || !ARG.equals(args[0])) {
+        if (args.length != 2 || !ARG.equals(args[1])) {
             log.log(Level.SEVERE, "Usage: hash-object -w <file>");
             return;
         }
