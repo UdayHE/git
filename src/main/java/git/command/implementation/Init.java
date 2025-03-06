@@ -8,23 +8,25 @@ import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static git.constant.Constant.*;
+
 public class Init implements Command {
 
     private static final Logger log = Logger.getLogger(Init.class.getName());
 
     @Override
     public void execute(String[] args) {
-        final File root = new File(".git");
-        final File objectsDir = new File(root, "objects");
-        final File refsDir = new File(root, "refs");
-        final File head = new File(root, "HEAD");
+        final File root = new File(GIT_DIRECTORY);
+        final File objectsDir = new File(root, OBJECTS);
+        final File refsDir = new File(root, REFS);
+        final File head = new File(root, HEAD);
 
         // Create .git directory and its subdirectories
         try {
             createObjectsDirectory(objectsDir);
             createRefsDirectory(refsDir);
             createHeadFile(head);
-            Files.write(head.toPath(), "ref: refs/heads/main\n".getBytes());
+            Files.write(head.toPath(), HEADS_REFS_BYTES);
             log.log(Level.INFO, "Initialized git directory");
         } catch (Exception e) {
             log.log(Level.SEVERE, "Exception in init command while handling file: {0}", e.getMessage());

@@ -37,7 +37,7 @@ public class HashObject implements Command {
         message.update(OBJECT_TYPE_BLOB);
         message.update(SPACE_BYTES);
         message.update(lengthBytes);
-        message.update(NULL);
+        message.update(NULL_BYTES);
         message.update(bytes);
 
         var hashBytes = message.digest();
@@ -55,7 +55,7 @@ public class HashObject implements Command {
             deflaterOutputStream.write(OBJECT_TYPE_BLOB);
             deflaterOutputStream.write(SPACE_BYTES);
             deflaterOutputStream.write(lengthBytes);
-            deflaterOutputStream.write(NULL);
+            deflaterOutputStream.write(NULL_BYTES);
             deflaterOutputStream.write(bytes);
         }
         return hash;
