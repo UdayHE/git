@@ -2,38 +2,64 @@ package git.command.implementation;
 
 import git.command.Command;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.InflaterInputStream;
 
 public class LsTree implements Command {
-
 
     @Override
     public void execute(String[] args) throws Exception {
         String hash = args[2];
         File file = new File(".git/objects/" + hash.substring(0, 2) + "/" + hash.substring(2));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new InflaterInputStream(new FileInputStream(file))));
-        String line;
-        StringBuilder treeObjectContent = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            treeObjectContent.append(line);
+
+        if (!file.exists()) {
+            System.err.println("Error: Object not found.");
+            return;
         }
-        String temp = new String(treeObjectContent);
-        String[] array = temp.split("\0");
-        ArrayList<String> dirStructure = new ArrayList<>();
-        for (int i = 1; i < array.length; i++) {
-            String[] tempArray = array[i].split(" ", 2);
-            if (tempArray.length == 2) {
-                String name = tempArray[1];
-                dirStructure.add(name);
-            }
+
+        try (InflaterInputStream inflaterStream = new InflaterInputStream(new FileInputStream(file))) {
+            byte[] rawData = inflaterStream.readAllBytes(); // Read decompressed tree object
+            parseAndPrintTree(rawData);
         }
-        dirStructure.sort(null);
-        for (String s : dirStructure)
-            System.out.println(s);
+    }
+
+    private void parseAndPrintTree(byte[] data) {
+        int index = 0;
+
+        // **Skip tree object header** ("tree <size>\0")
+        while (data[index] != 0) index++;
+        index++; // Move past the null terminator
+
+        List<String> fileNames = new ArrayList<>();
+
+        while (index < data.length) {
+            // Extract file mode (ends at the first space)
+            int modeEnd = index;
+            while (data[modeEnd] != ' ') modeEnd++;
+            String mode = new String(data, index, modeEnd - index);
+            index = modeEnd + 1;
+
+            // Extract filename (ends at null byte)
+            int nameEnd = index;
+            while (data[nameEnd] != 0) nameEnd++;
+            String fileName = new String(data, index, nameEnd - index);
+            index = nameEnd + 1; // Move past null byte
+
+            // **Skip the 20-byte SHA-1 binary hash**
+            index += 20;
+
+            // Store the filename for sorting
+            fileNames.add(fileName);
+        }
+
+        // **Sort and print the filenames**
+        fileNames.sort(null);
+        for (String name : fileNames) {
+            System.out.println(name);
+        }
     }
 }
+
