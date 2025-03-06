@@ -14,6 +14,7 @@ public class CommandRegistry {
     public CommandRegistry() {
         commands.put(git.enums.Command.INIT.getValue(), new Init());
         commands.put(git.enums.Command.CAT_FILE.getValue(), new CatFile());
+        commands.put(git.enums.Command.HASH_OBJECT.getValue(), new HashObject());
     }
 
     public void execute(String[] args) {
