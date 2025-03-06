@@ -8,15 +8,13 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
 
+import static java.lang.System.out;
+
 public class HashObject implements Command {
 
-    private static final Logger log = Logger.getLogger(HashObject.class.getName());
-
-    private static final String ARG = "-w";
     private static final String SHA_1 = "SHA-1";
     private static final String OBJECTS_PATH = ".git/objects/";
 
@@ -26,13 +24,9 @@ public class HashObject implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
-//        if (args.length != 2 || !ARG.equals(args[1])) {
-//            log.log(Level.SEVERE, "Usage: hash-object -w <file>");
-//            return;
-//        }
         String fileName = args[2];
         String hash = hashFile(new File(fileName));
-        System.out.println(hash);
+        out.println(hash);
     }
 
     public String hashFile(File File) throws IOException, NoSuchAlgorithmException {
@@ -41,7 +35,7 @@ public class HashObject implements Command {
         }
     }
 
-    public String hashFile(byte[] bytes) throws IOException, NoSuchAlgorithmException {
+    private String hashFile(byte[] bytes) throws IOException, NoSuchAlgorithmException {
         var lengthBytes = String.valueOf(bytes.length).getBytes();
         var message = MessageDigest.getInstance(SHA_1);
         message.update(OBJECT_TYPE_BLOB);
