@@ -6,7 +6,6 @@ public class Constant {
     }
 
     public static final String ARG_P = "-p";
-    public static final String ARG_M = "-m";
     public static final String OBJECTS_BASE_PATH = ".git/objects/%s/%s";
     public static final char NULL_CHAR = '\0';
 
@@ -24,8 +23,6 @@ public class Constant {
     public static final String SPACE = " ";
     public static final String NULL_STRING = "\0";
     public static final String TREE = "tree ";
-    public static final String PARENT = "parent ";
-    public static final String COMMIT = "commit ";
     public static final String FILE_MODE_BLOB = "100644";  // Regular file (non-executable)
     public static final String TREE_MODE_DIRECTORY = "40000"; // Directory (tree object)
     public static final String GIT_DIRECTORY = ".git";
@@ -34,8 +31,4 @@ public class Constant {
     public static final String HEAD = "HEAD";
     public static final String CURRENT_DIR = ".";
     public static final char EMPTY_CHAR = ' ';
-
-
-    public static final String COMMIT_TREE = "commit-tree";
-
 }
