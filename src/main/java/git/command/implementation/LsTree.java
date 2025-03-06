@@ -10,16 +10,17 @@ import java.util.zip.InflaterInputStream;
 
 public class LsTree implements Command {
 
+    private static final String OBJECTS_PATH = ".git/objects/";
+    private static final String FORWARD_SLASH = "/";
+
     @Override
     public void execute(String[] args) throws Exception {
         String hash = args[2];
-        File file = new File(".git/objects/" + hash.substring(0, 2) + "/" + hash.substring(2));
-
+        File file = new File(OBJECTS_PATH + hash.substring(0, 2) + FORWARD_SLASH + hash.substring(2));
         if (!file.exists()) {
             System.err.println("Error: Object not found.");
             return;
         }
-
         try (InflaterInputStream inflaterStream = new InflaterInputStream(new FileInputStream(file))) {
             byte[] rawData = inflaterStream.readAllBytes(); // Read decompressed tree object
             parseAndPrintTree(rawData);
@@ -28,7 +29,6 @@ public class LsTree implements Command {
 
     private void parseAndPrintTree(byte[] data) {
         int index = 0;
-
         // **Skip tree object header** ("tree <size>\0")
         while (data[index] != 0) index++;
         index++; // Move past the null terminator
@@ -39,7 +39,7 @@ public class LsTree implements Command {
             // Extract file mode (ends at the first space)
             int modeEnd = index;
             while (data[modeEnd] != ' ') modeEnd++;
-            String mode = new String(data, index, modeEnd - index);
+            new String(data, index, modeEnd - index);
             index = modeEnd + 1;
 
             // Extract filename (ends at null byte)
@@ -54,7 +54,6 @@ public class LsTree implements Command {
             // Store the filename for sorting
             fileNames.add(fileName);
         }
-
         // **Sort and print the filenames**
         fileNames.sort(null);
         for (String name : fileNames) {
