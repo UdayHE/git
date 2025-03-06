@@ -6,7 +6,8 @@ public enum Command {
     CAT_FILE("cat-file"),
     HASH_OBJECT("hash-object"),
     LS_TREE("ls-tree"),
-    WRITE_TREE("write-tree");
+    WRITE_TREE("write-tree"),
+    COMMIT_TREE("commit-tree");
 
     private final String value;
 
