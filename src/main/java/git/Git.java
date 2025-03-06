@@ -18,7 +18,7 @@ public class Git {
         return INSTANCE;
     }
 
-    public void process(String[] args) {
+    public void process(String[] args) throws Exception {
         log.log(Level.INFO, "Working with Git");
         CommandRegistry commandRegistry = new CommandRegistry();
         commandRegistry.execute(args);

@@ -17,7 +17,7 @@ public class CommandRegistry {
         commands.put(git.enums.Command.HASH_OBJECT.getValue(), new HashObject());
     }
 
-    public void execute(String[] args) {
+    public void execute(String[] args) throws Exception {
         final String command = args[0];
         log.log(Level.INFO, "Executing {0} command", command);
         Command cmd = commands.get(command);

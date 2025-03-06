@@ -1,14 +1,10 @@
 package git.command;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
@@ -25,46 +21,77 @@ public class HashObject implements Command {
     private static final String OBJECTS_PATH = ".git/objects/";
 
     @Override
-    public void execute(String[] args) {
+    public void execute(String[] args) throws Exception {
         if (args.length != 2 || !ARG.equals(args[0])) {
             log.log(Level.SEVERE, "Usage: hash-object -w <file>");
             return;
         }
         String fileName = args[2];
+
         try {
-            byte[] fileContent = Files.readAllBytes(Path.of(fileName));
-            // Create Git-style blob header
-            String header = BLOB + fileContent.length + NULL_CHAR;
-            byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
-            // Combine header and file content
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(headerBytes);
-            outputStream.write(fileContent);
 
-            byte[] gitBlob = outputStream.toByteArray();
-            // Compute SHA-1 hash
-            MessageDigest md = MessageDigest.getInstance(SHA_1);
-            byte[] sha1Hash = md.digest(gitBlob);
-            // Convert hash to hex string
-            StringBuilder hashHex = new StringBuilder();
-            for (byte b : sha1Hash)
-                hashHex.append(String.format(HEX_FORMAT, b));
+            long fileSize = Files.size(Paths.get(fileName));
 
-            String objectHash = hashHex.toString();
-            System.out.print(objectHash);
-            // Write to .git/objects directory
-            File gitObjectsDir = new File(OBJECTS_PATH + objectHash.substring(0, 2));
+            byte[] fileContentInByte = Files.readAllBytes(Paths.get(fileName));
 
-            if (!gitObjectsDir.exists())
-                gitObjectsDir.mkdirs();
+            String fileContentCovertedIntoString = new String(fileContentInByte);
 
-            File objectFile = new File(gitObjectsDir, objectHash.substring(2));
-            try (FileOutputStream fos = new FileOutputStream(objectFile);
-                 DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
-                dos.write(gitBlob); // Compress and write
+            String header = "blob " + fileSize + "\0";
+
+            String combinedData = header + fileContentCovertedIntoString;
+
+//           Now we have the combined data and need to convert it into hash
+
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+
+            byte[] messageDigest = md.digest(combinedData.getBytes());
+
+//           Convert byte array into hex format
+
+            StringBuilder sb = new StringBuilder();
+
+            for(byte b: messageDigest){
+
+                sb.append(String.format("%02x", b));
+
             }
-        } catch (IOException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+
+            String hashedString = sb.toString();
+
+            String blobPath =
+
+                    String.format(".git/objects/%s/%s", hashedString.substring(0, 2),
+
+                            hashedString.substring(2));
+
+            File blobFile = new File(blobPath);
+
+            blobFile.getParentFile().mkdirs();
+
+            DeflaterOutputStream out =
+
+                    new DeflaterOutputStream(new FileOutputStream(blobFile));
+
+            out.write("blob".getBytes());
+
+            out.write(" ".getBytes());
+
+            out.write(String.valueOf(fileSize).getBytes());
+
+            out.write(0);
+
+            out.write(fileContentInByte);
+
+            out.close();
+
+            System.out.println(hashedString);
+
+        }
+
+        catch (Exception e) {
+
+            throw new Exception(e);
+
         }
     }
 }
