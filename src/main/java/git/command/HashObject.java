@@ -34,8 +34,7 @@ public class HashObject implements Command {
             return;
         }
         String fileName = args[2];
-
-
+        hashFile(new File(fileName));
     }
 
     public String hashFile(File File) throws IOException, NoSuchAlgorithmException {
