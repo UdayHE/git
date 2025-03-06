@@ -29,10 +29,10 @@ public class HashObject implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
-        if (args.length != 2 || !ARG.equals(args[1])) {
-            log.log(Level.SEVERE, "Usage: hash-object -w <file>");
-            return;
-        }
+//        if (args.length != 2 || !ARG.equals(args[1])) {
+//            log.log(Level.SEVERE, "Usage: hash-object -w <file>");
+//            return;
+//        }
         String fileName = args[2];
         hashFile(new File(fileName));
     }
