@@ -2,7 +2,8 @@ package git.enums;
 
 public enum Command {
 
-    INIT("init");
+    INIT("init"),
+    CAT_FILE("cat-file");
 
     private final String value;
 

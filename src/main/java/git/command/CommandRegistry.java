@@ -13,12 +13,15 @@ public class CommandRegistry {
 
     public CommandRegistry() {
         commands.put(git.enums.Command.INIT.getValue(), new Init());
+        commands.put(git.enums.Command.CAT_FILE.getValue(), new CatFile());
     }
 
-    public void execute(String command) {
+    public void execute(String[] args) {
+        final String command = args[0];
+        log.log(Level.INFO, "Executing {0} command", command);
         Command cmd = commands.get(command);
         if (cmd != null)
-            cmd.execute();
+            cmd.execute(args);
         else
             log.log(Level.SEVERE, "Unknown command: {0}", command);
     }

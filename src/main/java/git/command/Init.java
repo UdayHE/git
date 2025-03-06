@@ -11,7 +11,7 @@ public class Init implements Command {
     private static final Logger log = Logger.getLogger(Init.class.getName());
 
     @Override
-    public void execute() {
+    public void execute(String[] args) {
         final File root = new File(".git");
         final File objectsDir = new File(root, "objects");
         final File refsDir = new File(root, "refs");

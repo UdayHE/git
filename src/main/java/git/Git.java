@@ -21,8 +21,6 @@ public class Git {
     public void process(String[] args) {
         log.log(Level.INFO, "Working with Git");
         CommandRegistry commandRegistry = new CommandRegistry();
-        final String command = args[0];
-        log.log(Level.INFO, "Executing {0} command", command);
-        commandRegistry.execute(command);
+        commandRegistry.execute(args);
     }
 }
