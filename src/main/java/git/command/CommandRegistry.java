@@ -19,6 +19,7 @@ public class CommandRegistry {
 
     public void execute(String[] args) throws Exception {
         final String command = args[0];
+        log.log(Level.INFO, "Args: {0}", args);
         log.log(Level.INFO, "Executing {0} command", command);
         Command cmd = commands.get(command);
         if (cmd != null)
