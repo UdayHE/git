@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
+import java.util.zip.DeflaterOutputStream;
 
 public class CommitTree implements Command {
 
@@ -65,19 +66,28 @@ public class CommitTree implements Command {
         return commitContent.toString();
     }
 
+import java.util.zip.DeflaterOutputStream;
+
     private String writeCommitObject(String content) {
         try {
-            byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
-            String sha = computeSHA1(contentBytes);
+            // 1. Prepare Git object header: "commit <size>\0"
+            String header = "commit " + content.length() + "\0";
+            byte[] fullContent = (header + content).getBytes(StandardCharsets.UTF_8);
 
+            // 2. Compute the SHA-1 hash of the full content
+            String sha = computeSHA1(fullContent);
+
+            // 3. Determine the object storage path
             File objectDir = new File(".git/objects/" + sha.substring(0, 2));
             if (!objectDir.exists()) {
                 objectDir.mkdirs();
             }
-
             File commitFile = new File(objectDir, sha.substring(2));
-            try (FileOutputStream fos = new FileOutputStream(commitFile)) {
-                fos.write(contentBytes);
+
+            // 4. Compress and write to file
+            try (FileOutputStream fos = new FileOutputStream(commitFile);
+                 DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
+                dos.write(fullContent);
             }
 
             return sha;
@@ -86,6 +96,7 @@ public class CommitTree implements Command {
             return null;
         }
     }
+
 
     private String computeSHA1(byte[] data) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
