@@ -10,6 +10,8 @@ import java.time.Instant;
 import java.util.Formatter;
 
 public class CommitTree implements Command {
+
+
     @Override
     public void execute(String[] args) throws Exception {
         String treeSha = args[1];

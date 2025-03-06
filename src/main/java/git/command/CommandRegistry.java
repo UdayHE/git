@@ -19,6 +19,7 @@ public class CommandRegistry {
         commands.put(git.enums.Command.HASH_OBJECT.getValue(), new HashObject());
         commands.put(git.enums.Command.LS_TREE.getValue(), new LsTree());
         commands.put(git.enums.Command.WRITE_TREE.getValue(), new WriteTree());
+        commands.put(git.enums.Command.COMMIT_TREE.getValue(), new CommitTree());
     }
 
     public void execute(String[] args) throws Exception {
