@@ -1,9 +1,6 @@
 package git.command;
 
-import git.command.implementation.CatFile;
-import git.command.implementation.HashObject;
-import git.command.implementation.Init;
-import git.command.implementation.LsTree;
+import git.command.implementation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +18,7 @@ public class CommandRegistry {
         commands.put(git.enums.Command.CAT_FILE.getValue(), new CatFile());
         commands.put(git.enums.Command.HASH_OBJECT.getValue(), new HashObject());
         commands.put(git.enums.Command.LS_TREE.getValue(), new LsTree());
+        commands.put(git.enums.Command.WRITE_TREE.getValue(), new WriteTree());
     }
 
     public void execute(String[] args) throws Exception {
