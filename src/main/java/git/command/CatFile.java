@@ -19,11 +19,11 @@ public class CatFile implements Command {
             String path = String.format(".git/objects/%s/%s", fileName.substring(0, 2), fileName.substring(2));
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(new InflaterInputStream(new FileInputStream(path))))) {
                 String line = reader.readLine();
-                System.out.print(line.substring(line.indexOf('\0') + 1));
+                log.log(Level.INFO, line.substring(line.indexOf('\0') + 1));
                 while ((line = reader.readLine()) != null)
-                    log.log(Level.INFO,line);
+                    log.log(Level.INFO, line);
             } catch (IOException exception) {
-                exception.printStackTrace();
+                log.log(Level.SEVERE, exception.getMessage());
             }
         }
     }
