@@ -1,7 +1,9 @@
 package git.command;
 
-import java.io.*;
-import java.util.logging.Level;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
 
@@ -11,17 +13,18 @@ public class CatFile implements Command {
 
     @Override
     public void execute(String[] args) {
-        String hash = args[2];
-        String dirHash = hash.substring(0, 2);
-        String fileHash = hash.substring(2);
-        File blobFile = new File("./.git/objects/" + dirHash + "/" + fileHash);
-        try {
-            String blob = new BufferedReader(new InputStreamReader(new InflaterInputStream(new FileInputStream(blobFile)))).readLine();
-            String content = blob.substring(blob.indexOf("\0") + 1);
-            log.log(Level.INFO, content);
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "Exception {0}", e);
-            throw new RuntimeException(e);
+        if (args[1].equals("-p")) {
+            String fileName = args[2];
+            String path = String.format(".git/objects/%s/%s", fileName.substring(0, 2), fileName.substring(2));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new InflaterInputStream(new FileInputStream(path))))) {
+                String line = reader.readLine();
+                System.out.print(line.substring(line.indexOf('\0') + 1));
+                while ((line = reader.readLine()) != null) {
+                    System.out.print(line);
+                }
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
         }
     }
 }
