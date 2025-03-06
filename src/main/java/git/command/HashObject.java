@@ -34,7 +34,8 @@ public class HashObject implements Command {
 //            return;
 //        }
         String fileName = args[2];
-        hashFile(new File(fileName));
+        String hash = hashFile(new File(fileName));
+        System.out.println(hash);
     }
 
     public String hashFile(File File) throws IOException, NoSuchAlgorithmException {
@@ -79,6 +80,5 @@ public class HashObject implements Command {
             deflaterOutputStream.write(bytes);
         }
         return hash;
-
     }
 }
