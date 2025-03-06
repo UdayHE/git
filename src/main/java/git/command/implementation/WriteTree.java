@@ -40,6 +40,13 @@ public class WriteTree implements Command {
             }
         }
 
+        // Sort entries by file name
+        entries.sort((a, b) -> {
+            String nameA = new String(a).split("\0")[1];
+            String nameB = new String(b).split("\0")[1];
+            return nameA.compareTo(nameB);
+        });
+
         // Compute tree object byte size
         int totalSize = entries.stream().mapToInt(e -> e.length).sum();
         byte[] header = ("tree " + totalSize + "\0").getBytes();
@@ -57,6 +64,7 @@ public class WriteTree implements Command {
         storeObject(treeHash, treeData);
         return treeHash;
     }
+
 
     private byte[] serializeEntry(String mode, String name, String hash) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
