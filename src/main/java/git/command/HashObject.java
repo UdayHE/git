@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
-import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
 
 import static java.lang.System.out;
