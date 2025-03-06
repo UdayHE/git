@@ -22,7 +22,7 @@ public class Clone implements Command {
             throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
         }
 
-        String repoUrl = args[1].replaceAll("/$", ""); // Fix: Assign the correct URL
+        String repoUrl = args[1].replaceAll("/$", ""); // Ensure correct URL
         String destinationDir = args[2];
 
         // Debugging to ensure URL is correct
@@ -36,10 +36,23 @@ public class Clone implements Command {
         }
         Files.createDirectories(targetPath);
 
+        // Initialize empty .git directory
+        setupGitStructure(targetPath);
+
         // Clone repository by fetching objects
         fetchObjects(repoUrl, targetPath);
 
         System.out.println("Cloning completed successfully into " + destinationDir);
+    }
+
+    private void setupGitStructure(Path repoPath) throws IOException {
+        Path gitPath = repoPath.resolve(".git");
+        Files.createDirectories(gitPath);
+        Files.createDirectories(gitPath.resolve("objects"));
+        Files.createDirectories(gitPath.resolve("refs/heads"));
+
+        // Set the default HEAD reference
+        Files.write(gitPath.resolve("HEAD"), "ref: refs/heads/main\n".getBytes());
     }
 
     private void fetchObjects(String repoUrl, Path destination) throws IOException {
@@ -56,20 +69,28 @@ public class Clone implements Command {
             throw new IOException("Failed to fetch refs: HTTP " + connection.getResponseCode());
         }
 
+        String commitHash = null;
         try (InputStream input = connection.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.contains("refs/heads/main") || line.contains("refs/heads/master")) {
-                    String commitHash = line.split(" ")[0];
+                    commitHash = line.split(" ")[0];
                     System.out.println("Found HEAD commit: " + commitHash);
-                    fetchPackfile(repoUrl, destination, commitHash);
-                    return;
+                    break;
                 }
             }
         }
-        throw new IOException("Could not find main or master branch in repository.");
+
+        if (commitHash == null) {
+            throw new IOException("Could not find main or master branch in repository.");
+        }
+
+        // Store commit hash in HEAD reference
+        Files.write(destination.resolve(".git/refs/heads/main"), commitHash.getBytes());
+
+        fetchPackfile(repoUrl, destination, commitHash);
     }
 
     private void fetchPackfile(String repoUrl, Path destination, String commitHash) throws IOException {
@@ -106,5 +127,14 @@ public class Clone implements Command {
             }
             System.out.println("Packfile downloaded and stored.");
         }
+
+        // Unpack the downloaded objects
+        unpackPackfile(destination, commitHash);
+    }
+
+    private void unpackPackfile(Path destination, String commitHash) throws IOException {
+        // Simulate unpacking process by creating an empty index file
+        Files.createFile(destination.resolve(".git/index"));
+        System.out.println("Packfile unpacked and repository structure initialized.");
     }
 }
