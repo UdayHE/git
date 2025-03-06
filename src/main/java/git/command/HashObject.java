@@ -45,12 +45,9 @@ public class HashObject implements Command {
         }
     }
 
-    public File getDotGit() {
-        return new File( new File("."), ".git");
-    }
 
     public File getObjectsDirectory() {
-        return new File(getDotGit(), "objects");
+        return new File(new File(".git"), "objects");
     }
 
     public String hashFile(byte[] bytes) throws IOException, NoSuchAlgorithmException {
