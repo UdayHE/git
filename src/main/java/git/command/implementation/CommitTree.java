@@ -11,6 +11,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 import java.util.zip.DeflaterOutputStream;
 
+import static git.constant.Constant.HEX_CHAR;
+import static git.constant.Constant.SHA_1;
+
 public class CommitTree implements Command {
 
     @Override
@@ -97,7 +100,7 @@ public class CommitTree implements Command {
 
 
     private String computeSHA1(byte[] data) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        MessageDigest md = MessageDigest.getInstance(SHA_1);
         byte[] hash = md.digest(data);
         return byteArrayToHex(hash);
     }
@@ -105,7 +108,7 @@ public class CommitTree implements Command {
     private String byteArrayToHex(byte[] bytes) {
         try (Formatter formatter = new Formatter()) {
             for (byte b : bytes) {
-                formatter.format("%02x", b);
+                formatter.format(HEX_CHAR, b);
             }
             return formatter.toString();
         }
