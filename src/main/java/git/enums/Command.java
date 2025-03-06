@@ -7,7 +7,8 @@ public enum Command {
     HASH_OBJECT("hash-object"),
     LS_TREE("ls-tree"),
     WRITE_TREE("write-tree"),
-    COMMIT_TREE("commit-tree");
+    COMMIT_TREE("commit-tree"),
+    CLONE("clone");
 
     private final String value;
 

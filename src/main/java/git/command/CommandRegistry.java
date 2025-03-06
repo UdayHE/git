@@ -20,6 +20,7 @@ public class CommandRegistry {
         commands.put(git.enums.Command.LS_TREE.getValue(), new LsTree());
         commands.put(git.enums.Command.WRITE_TREE.getValue(), new WriteTree());
         commands.put(git.enums.Command.COMMIT_TREE.getValue(), new CommitTree());
+        commands.put(git.enums.Command.CLONE.getValue(), new Clone());
     }
 
     public void execute(String[] args) throws Exception {
