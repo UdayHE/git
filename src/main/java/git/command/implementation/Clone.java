@@ -95,7 +95,7 @@ public class Clone implements Command {
 
         try (OutputStream output = connection.getOutputStream()) {
             // Correctly formatted request for packfile negotiation
-            output.write(("0032want " + commitHash + " multi_ack side-band-64k ofs-delta\n0000").getBytes());
+            output.write(("0024want " + commitHash + " multi_ack ofs-delta\n0000").getBytes());
         }
 
         if (connection.getResponseCode() != 200) {
