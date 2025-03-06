@@ -12,10 +12,10 @@ public class Clone implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
-        // Validate arguments
-        if (args.length != 2) {
-            throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
-        }
+//        // Validate arguments
+//        if (args.length != 2) {
+//            throw new IllegalArgumentException("Usage: clone <repository_url> <destination_directory>");
+//        }
 
         String repoUrl = args[0];
         String destinationDir = args[1];
