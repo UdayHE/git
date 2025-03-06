@@ -6,10 +6,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
+
+import static java.lang.System.out;
 
 public class LsTree implements Command {
 
+    private static final Logger log = Logger.getLogger(LsTree.class.getName());
     private static final String OBJECTS_PATH = ".git/objects/";
     private static final String FORWARD_SLASH = "/";
 
@@ -18,7 +23,7 @@ public class LsTree implements Command {
         String hash = args[2];
         File file = new File(OBJECTS_PATH + hash.substring(0, 2) + FORWARD_SLASH + hash.substring(2));
         if (!file.exists()) {
-            System.err.println("Error: Object not found.");
+            log.log(Level.SEVERE, "Error: Object not found.");
             return;
         }
         try (InflaterInputStream inflaterStream = new InflaterInputStream(new FileInputStream(file))) {
@@ -56,9 +61,8 @@ public class LsTree implements Command {
         }
         // **Sort and print the filenames**
         fileNames.sort(null);
-        for (String name : fileNames) {
-            System.out.println(name);
-        }
+        for (String name : fileNames)
+            out.println(name);
     }
 }
 
