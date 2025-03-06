@@ -27,6 +27,7 @@ public class WriteTree implements Command {
     private static final String TREE_MODE_DIRECTORY = "40000"; // Directory (tree object)
     private static final String GIT_DIRECTORY = ".git";
     private static final String CURRENT_DIR = ".";
+    private static final char EMPTY_CHAR = ' ';
 
 
     @Override
@@ -54,42 +55,7 @@ public class WriteTree implements Command {
         }
 
         // Sort entries using raw bytes (Git sorts lexicographically)
-        entries.sort((a, b) -> {
-            // Find the space byte (0x20) after the mode
-            int aSpace = -1;
-            for (int i = 0; i < a.length; i++) {
-                if (a[i] == ' ') {
-                    aSpace = i;
-                    break;
-                }
-            }
-
-            // Find the null byte (0x00) after the name
-            int aNull = aSpace + 1;
-            while (aNull < a.length && a[aNull] != 0) {
-                aNull++;
-            }
-
-            // Do the same for b
-            int bSpace = -1;
-            for (int i = 0; i < b.length; i++) {
-                if (b[i] == ' ') {
-                    bSpace = i;
-                    break;
-                }
-            }
-
-            int bNull = bSpace + 1;
-            while (bNull < b.length && b[bNull] != 0) {
-                bNull++;
-            }
-
-            // Extract name bytes from both entries
-            byte[] aName = Arrays.copyOfRange(a, aSpace + 1, aNull);
-            byte[] bName = Arrays.copyOfRange(b, bSpace + 1, bNull);
-
-            return Arrays.compare(aName, bName);
-        });
+        sortWithRawBytes(entries);
 
         // Compute the tree object byte size
         int totalSize = entries.stream().mapToInt(e -> e.length).sum();
@@ -107,6 +73,45 @@ public class WriteTree implements Command {
         String treeHash = computeSHA1(treeData);
         storeObject(treeHash, treeData);
         return treeHash;
+    }
+
+    private static void sortWithRawBytes(List<byte[]> entries) {
+        entries.sort((a, b) -> {
+            // Find the space byte (0x20) after the mode
+            int aSpace = -1;
+            for (int i = 0; i < a.length; i++) {
+                if (a[i] == EMPTY_CHAR) {
+                    aSpace = i;
+                    break;
+                }
+            }
+
+            // Find the null byte (0x00) after the name
+            int aNull = aSpace + 1;
+            while (aNull < a.length && a[aNull] != 0) {
+                aNull++;
+            }
+
+            // Do the same for b
+            int bSpace = -1;
+            for (int i = 0; i < b.length; i++) {
+                if (b[i] == EMPTY_CHAR) {
+                    bSpace = i;
+                    break;
+                }
+            }
+
+            int bNull = bSpace + 1;
+            while (bNull < b.length && b[bNull] != 0) {
+                bNull++;
+            }
+
+            // Extract name bytes from both entries
+            byte[] aName = Arrays.copyOfRange(a, aSpace + 1, aNull);
+            byte[] bName = Arrays.copyOfRange(b, bSpace + 1, bNull);
+
+            return Arrays.compare(aName, bName);
+        });
     }
 
     private byte[] serializeEntry(String mode, String name, String hash) {
