@@ -8,6 +8,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
 
+import static java.lang.System.out;
+
 public class CatFile implements Command {
 
     private static final Logger log = Logger.getLogger(CatFile.class.getName());
@@ -24,7 +26,7 @@ public class CatFile implements Command {
         String path = String.format(".git/objects/%s/%s", fileName.substring(0, 2), fileName.substring(2));
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new InflaterInputStream(new FileInputStream(path))))) {
             String line = reader.readLine();
-            System.out.print(line.substring(line.indexOf('\0') + 1));
+            out.print(line.substring(line.indexOf('\0') + 1));
             while ((line = reader.readLine()) != null)
                 log.log(Level.INFO, line);
         } catch (IOException exception) {
