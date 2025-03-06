@@ -13,17 +13,40 @@ public class Init implements Command {
     @Override
     public void execute() {
         final File root = new File(".git");
-        new File(root, "objects").mkdirs();
-        new File(root, "refs").mkdirs();
+        final File objectsDir = new File(root, "objects");
+        final File refsDir = new File(root, "refs");
         final File head = new File(root, "HEAD");
 
+        // Create .git directory and its subdirectories
         try {
-            head.createNewFile();
+            createObjectsDirectory(objectsDir);
+            createRefsDirectory(refsDir);
+            createHeadFile(head);
             Files.write(head.toPath(), "ref: refs/heads/main\n".getBytes());
             log.log(Level.INFO, "Initialized git directory");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Exception in init command: {0}", e);
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Exception in init command while handling file: {0}", e.getMessage());
+            throw new RuntimeException("Error initializing git directory.", e);
         }
+    }
+
+    private void createHeadFile(File head) throws IOException {
+        if (!head.createNewFile() && !head.exists())
+            throwException("Failed to create HEAD file.");
+    }
+
+    private void createRefsDirectory(File refsDir) throws IOException {
+        if (!refsDir.mkdirs() && !refsDir.exists())
+            throwException("Failed to create refs directory.");
+    }
+
+    private void createObjectsDirectory(File objectsDir) throws IOException {
+        if (!objectsDir.mkdirs() && !objectsDir.exists())
+            throwException("Failed to create objects directory.");
+    }
+
+    private void throwException(String msg) throws IOException {
+        log.log(Level.SEVERE, msg);
+        throw new IOException(msg);
     }
 }
