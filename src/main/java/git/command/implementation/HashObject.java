@@ -12,16 +12,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.zip.DeflaterOutputStream;
 
+import static git.constant.Constant.*;
 import static java.lang.System.out;
 
 public class HashObject implements Command {
 
-    private static final String SHA_1 = "SHA-1";
-    private static final String OBJECTS_PATH = ".git/objects/";
-
-    private static final byte[] OBJECT_TYPE_BLOB = "blob".getBytes();
-    private static final byte[] SPACE = " ".getBytes();
-    private static final byte[] NULL = {0};
 
     @Override
     public void execute(String[] args) throws Exception {
@@ -40,7 +35,7 @@ public class HashObject implements Command {
         var lengthBytes = String.valueOf(bytes.length).getBytes();
         var message = MessageDigest.getInstance(SHA_1);
         message.update(OBJECT_TYPE_BLOB);
-        message.update(SPACE);
+        message.update(SPACE_BYTES);
         message.update(lengthBytes);
         message.update(NULL);
         message.update(bytes);
@@ -58,7 +53,7 @@ public class HashObject implements Command {
                 var deflaterOutputStream = new DeflaterOutputStream(outputStream);
         ) {
             deflaterOutputStream.write(OBJECT_TYPE_BLOB);
-            deflaterOutputStream.write(SPACE);
+            deflaterOutputStream.write(SPACE_BYTES);
             deflaterOutputStream.write(lengthBytes);
             deflaterOutputStream.write(NULL);
             deflaterOutputStream.write(bytes);

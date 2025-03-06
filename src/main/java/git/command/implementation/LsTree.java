@@ -10,13 +10,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.InflaterInputStream;
 
+import static git.constant.Constant.FORWARD_SLASH;
+import static git.constant.Constant.OBJECTS_PATH;
 import static java.lang.System.out;
 
 public class LsTree implements Command {
 
     private static final Logger log = Logger.getLogger(LsTree.class.getName());
-    private static final String OBJECTS_PATH = ".git/objects/";
-    private static final String FORWARD_SLASH = "/";
 
     @Override
     public void execute(String[] args) throws Exception {
@@ -26,8 +26,8 @@ public class LsTree implements Command {
             log.log(Level.SEVERE, "Error: Object not found.");
             return;
         }
-        try (InflaterInputStream inflaterStream = new InflaterInputStream(new FileInputStream(file))) {
-            byte[] rawData = inflaterStream.readAllBytes(); // Read decompressed tree object
+        try (InflaterInputStream inFlaterStream = new InflaterInputStream(new FileInputStream(file))) {
+            byte[] rawData = inFlaterStream.readAllBytes(); // Read decompressed tree object
             parseAndPrintTree(rawData);
         }
     }

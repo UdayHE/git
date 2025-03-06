@@ -12,22 +12,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.zip.DeflaterOutputStream;
 
+import static git.constant.Constant.*;
+
 public class WriteTree implements Command {
 
-
-    private static final String OBJECTS_PATH = ".git/objects/";
-    private static final String FORWARD_SLASH = "/";
-    private static final String SHA_1 = "SHA-1";
-    private static final String HEX_CHAR = "%02x";
-    private static final String BLOB = "blob ";
-    private static final String SPACE = " ";
-    private static final String NULL_CHAR = "\0";
-    private static final String TREE = "tree ";
-    private static final String FILE_MODE_BLOB = "100644";  // Regular file (non-executable)
-    private static final String TREE_MODE_DIRECTORY = "40000"; // Directory (tree object)
-    private static final String GIT_DIRECTORY = ".git";
-    private static final String CURRENT_DIR = ".";
-    private static final char EMPTY_CHAR = ' ';
 
 
     @Override
@@ -59,7 +47,7 @@ public class WriteTree implements Command {
 
         // Compute the tree object byte size
         int totalSize = entries.stream().mapToInt(e -> e.length).sum();
-        byte[] header = (TREE + totalSize + NULL_CHAR).getBytes();
+        byte[] header = (TREE + totalSize + NULL_STRING).getBytes();
 
         // Merge header and entries
         ByteArrayOutputStream treeStream = new ByteArrayOutputStream();
@@ -117,7 +105,7 @@ public class WriteTree implements Command {
     private byte[] serializeEntry(String mode, String name, String hash) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
-            output.write((mode + SPACE + name + NULL_CHAR).getBytes());
+            output.write((mode + SPACE + name + NULL_STRING).getBytes());
             output.write(hexToBinary(hash)); // Convert hash to binary
         } catch (IOException e) {
             throw new RuntimeException("Error serializing entry", e);
@@ -127,7 +115,7 @@ public class WriteTree implements Command {
 
     private String hashAndStoreBlob(File file) throws IOException {
         byte[] content = Files.readAllBytes(file.toPath());
-        byte[] header = (BLOB + content.length + NULL_CHAR).getBytes();
+        byte[] header = (BLOB + content.length + NULL_STRING).getBytes();
 
         ByteArrayOutputStream blobStream = new ByteArrayOutputStream();
         blobStream.write(header);
