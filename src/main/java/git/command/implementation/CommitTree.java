@@ -11,8 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 import java.util.zip.DeflaterOutputStream;
 
-import static git.constant.Constant.HEX_CHAR;
-import static git.constant.Constant.SHA_1;
+import static git.constant.Constant.*;
 
 public class CommitTree implements Command {
 
@@ -79,7 +78,7 @@ public class CommitTree implements Command {
             String sha = computeSHA1(fullContent);
 
             // 3. Determine the object storage path
-            File objectDir = new File(".git/objects/" + sha.substring(0, 2));
+            File objectDir = new File(OBJECTS_PATH + sha.substring(0, 2));
             if (!objectDir.exists()) {
                 objectDir.mkdirs();
             }
