@@ -52,7 +52,7 @@ public class CommitTree implements Command {
     }
 
     private String buildCommitContent(String treeSha, String parentSha, String message) {
-        String author = "Test User <test@example.com>";
+        String author = "Uday Hegde <iamudayhegde@gmail.com>";
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
         String timezone = "+0000";
 
