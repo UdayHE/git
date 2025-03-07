@@ -2,10 +2,15 @@ package git.command.implementation;
 
 import git.command.Command;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Clone implements Command {
 
@@ -36,31 +41,52 @@ public class Clone implements Command {
 
     private void clone(String repoUrl, File repoDirectory) {
         try {
-            // Construct the Git clone command
-            String[] command = {"git", "clone", repoUrl, repoDirectory.getAbsolutePath()};
+            String zipUrl = repoUrl.replace(".git", "") + "/archive/refs/heads/main.zip";
+            File tempZip = File.createTempFile("repo", ".zip");
+            tempZip.deleteOnExit();
 
-            // Execute the command
-            Process process = Runtime.getRuntime().exec(command);
+            log.log(Level.INFO, "Downloading repository zip from: {0}", zipUrl);
+            downloadFile(zipUrl, tempZip);
 
-            // Wait for the command to finish
-            int exitCode = process.waitFor();
+            log.log(Level.INFO, "Extracting repository...");
+            extractZip(tempZip, repoDirectory.getParentFile());
 
-            if (exitCode == 0) {
-                log.log(Level.INFO, "Repository successfully cloned into: {0}", repoDirectory.getAbsolutePath());
-            } else {
-                log.log(Level.SEVERE, "Error: Cloning failed. Exit code: {0}", exitCode);
-                // Optionally, you can read the error output from the process
-                // to log more detailed error messages.
-                readErrorOutput(process);
-            }
-        } catch (IOException | InterruptedException e) {
+            log.log(Level.INFO, "Repository successfully cloned into: {0}", repoDirectory.getAbsolutePath());
+        } catch (Exception e) {
             log.log(Level.SEVERE, "Error: Cloning failed - {0}", e.getMessage());
         }
     }
 
-    private void readErrorOutput(Process process) throws IOException {
-        java.util.Scanner s = new java.util.Scanner(process.getErrorStream()).useDelimiter("\\A");
-        String errorOutput = s.hasNext() ? s.next() : "";
-        log.log(Level.SEVERE, "Error output: {0}", errorOutput);
+    private void downloadFile(String fileURL, File destination) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(fileURL).openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+        try (InputStream in = connection.getInputStream();
+             FileOutputStream out = new FileOutputStream(destination)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
+    private void extractZip(File zipFile, File destinationDir) throws IOException {
+        try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+            while ((entry = zipIn.getNextEntry()) != null) {
+                File newFile = new File(destinationDir, entry.getName());
+                if (entry.isDirectory()) {
+                    newFile.mkdirs();
+                } else {
+                    newFile.getParentFile().mkdirs();
+                    try (FileOutputStream out = new FileOutputStream(newFile)) {
+                        Files.copy(zipIn, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+                zipIn.closeEntry();
+            }
+        }
     }
 }
