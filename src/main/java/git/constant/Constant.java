@@ -33,4 +33,10 @@ public class Constant {
     public static final String CURRENT_DIR = ".";
     public static final char EMPTY_CHAR = ' ';
     public static final String COMMIT_TREE = "commit-tree";
+    public static final String PARENT = "parent ";
+    public static final String AUTHOR = "author ";
+    public static final String COMMITTER = "committer ";
+    public static final String COMMIT = "commit ";
+    public static final String TIME_ZONE = "+0000";
+    public static final String AUTHOR_DETAILS = "Uday Hegde <iamudayhegde@gmail.com>";
 }

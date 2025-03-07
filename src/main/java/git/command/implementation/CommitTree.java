@@ -63,18 +63,18 @@ public class CommitTree implements Command {
      */
     private String buildCommitContent(String treeSha, String parentSha, String message) {
         // Static author and timestamp information
-        String author = "Uday Hegde <iamudayhegde@gmail.com>";
+        String author = AUTHOR_DETAILS;
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        String timezone = "+0000";
+        String timezone = TIME_ZONE;
 
         // Constructs the commit content using a StringBuilder for efficiency
         StringBuilder commitContent = new StringBuilder();
-        commitContent.append("tree ").append(treeSha).append("\n");
+        commitContent.append(TREE).append(treeSha).append("\n");
         if (parentSha != null) {
-            commitContent.append("parent ").append(parentSha).append("\n");
+            commitContent.append(PARENT).append(parentSha).append("\n");
         }
-        commitContent.append("author ").append(author).append(" ").append(timestamp).append(" ").append(timezone).append("\n");
-        commitContent.append("committer ").append(author).append(" ").append(timestamp).append(" ").append(timezone).append("\n\n");
+        commitContent.append(AUTHOR).append(author).append(SPACE).append(timestamp).append(SPACE).append(timezone).append("\n");
+        commitContent.append(COMMITTER).append(author).append(SPACE).append(timestamp).append(SPACE).append(timezone).append("\n\n");
         commitContent.append(message).append("\n");
 
         return commitContent.toString();
@@ -90,7 +90,7 @@ public class CommitTree implements Command {
     private String writeCommitObject(String content) {
         try {
             // Prepares the header for the Git object including the type and size
-            String header = "commit " + content.length() + "\0";
+            String header = COMMIT + content.length() + NULL_STRING;
             byte[] fullContent = (header + content).getBytes(StandardCharsets.UTF_8);
 
             // Computes the SHA-1 hash of the full content to use as the object name
