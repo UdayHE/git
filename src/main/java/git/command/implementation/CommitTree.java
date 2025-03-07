@@ -69,13 +69,13 @@ public class CommitTree implements Command {
 
         // Constructs the commit content using a StringBuilder for efficiency
         StringBuilder commitContent = new StringBuilder();
-        commitContent.append(TREE).append(treeSha).append("\n");
+        commitContent.append(TREE).append(treeSha).append(NEW_LINE);
         if (parentSha != null) {
-            commitContent.append(PARENT).append(parentSha).append("\n");
+            commitContent.append(PARENT).append(parentSha).append(NEW_LINE);
         }
-        commitContent.append(AUTHOR).append(author).append(SPACE).append(timestamp).append(SPACE).append(timezone).append("\n");
-        commitContent.append(COMMITTER).append(author).append(SPACE).append(timestamp).append(SPACE).append(timezone).append("\n\n");
-        commitContent.append(message).append("\n");
+        commitContent.append(AUTHOR).append(author).append(SPACE).append(timestamp).append(SPACE).append(timezone).append(NEW_LINE);
+        commitContent.append(COMMITTER).append(author).append(SPACE).append(timestamp).append(SPACE).append(timezone).append(NEW_LINE + NEW_LINE);
+        commitContent.append(message).append(NEW_LINE);
 
         return commitContent.toString();
     }

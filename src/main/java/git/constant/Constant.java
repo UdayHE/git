@@ -39,4 +39,5 @@ public class Constant {
     public static final String COMMIT = "commit ";
     public static final String TIME_ZONE = "+0000";
     public static final String AUTHOR_DETAILS = "Uday Hegde <iamudayhegde@gmail.com>";
+    public static final String NEW_LINE = "\n";
 }
