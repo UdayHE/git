@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static git.enums.Command.*;
+
 public class CommandRegistry {
 
     private static final Logger log = Logger.getLogger(CommandRegistry.class.getName());
@@ -14,13 +16,13 @@ public class CommandRegistry {
     private final Map<String, Command> commands = new HashMap<>();
 
     public CommandRegistry() {
-        commands.put(git.enums.Command.INIT.getValue(), new Init());
-        commands.put(git.enums.Command.CAT_FILE.getValue(), new CatFile());
-        commands.put(git.enums.Command.HASH_OBJECT.getValue(), new HashObject());
-        commands.put(git.enums.Command.LS_TREE.getValue(), new LsTree());
-        commands.put(git.enums.Command.WRITE_TREE.getValue(), new WriteTree());
-        commands.put(git.enums.Command.COMMIT_TREE.getValue(), new CommitTree());
-        commands.put(git.enums.Command.CLONE.getValue(), new Clone());
+        commands.put(INIT.getValue(), new Init());
+        commands.put(CAT_FILE.getValue(), new CatFile());
+        commands.put(HASH_OBJECT.getValue(), new HashObject());
+        commands.put(LS_TREE.getValue(), new LsTree());
+        commands.put(WRITE_TREE.getValue(), new WriteTree());
+        commands.put(COMMIT_TREE.getValue(), new CommitTree());
+        commands.put(CLONE.getValue(), new Clone());
     }
 
     public void execute(String[] args) throws Exception {
