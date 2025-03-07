@@ -30,10 +30,9 @@ public class CommitTree implements Command {
     public void execute(String[] args) {
         Map<String, String> argumentMap = new HashMap<>();
         // Parse command-line arguments and populate the map
-        for (int i = 0; i < args.length - 1; i++) {
+        for (int i = 0; i < args.length - 1; i++)
             argumentMap.put(args[i], args[i + 1]);
-            i++;
-        }
+
         String treeSha = argumentMap.get(COMMIT_TREE);
         String parentSha = argumentMap.get(ARG_P);
         String message = argumentMap.get(ARG_M);
