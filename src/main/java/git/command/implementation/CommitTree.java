@@ -9,11 +9,15 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
 
 import static git.constant.Constant.*;
 
 public class CommitTree implements Command {
+
+    private static final Logger log = Logger.getLogger(CommitTree.class.getName());
 
     @Override
     public void execute(String[] args) {
@@ -23,15 +27,15 @@ public class CommitTree implements Command {
 
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "commit-tree":
+                case COMMIT_TREE:
                     treeSha = args[i + 1];
                     i++;
                     break;
-                case "-p":
+                case ARG_P:
                     parentSha = args[i + 1];
                     i++;
                     break;
-                case "-m":
+                case ARG_M:
                     message = args[i + 1];
                     i++;
                     break;
@@ -39,16 +43,15 @@ public class CommitTree implements Command {
         }
 
         if (treeSha == null || message == null) {
-            System.err.println("Usage: commit-tree <tree_sha> -p <commit_sha> -m <message>");
+            log.log(Level.SEVERE, "Usage: commit-tree <tree_sha> -p <commit_sha> -m <message>");
             return;
         }
 
         String commitContent = buildCommitContent(treeSha, parentSha, message);
         String commitSha = writeCommitObject(commitContent);
 
-        if (commitSha != null) {
+        if (commitSha != null)
             System.out.println(commitSha);
-        }
     }
 
     private String buildCommitContent(String treeSha, String parentSha, String message) {
