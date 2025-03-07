@@ -32,6 +32,10 @@ public class Clone implements Command {
             return;
         }
 
+        clone(repoUrl, repoDirectory, destinationDir);
+    }
+
+    private void clone(String repoUrl, File repoDirectory, String destinationDir) {
         try {
             Git.cloneRepository()
                     .setURI(repoUrl)
