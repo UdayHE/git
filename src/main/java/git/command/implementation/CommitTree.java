@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.DeflaterOutputStream;
@@ -26,27 +28,15 @@ public class CommitTree implements Command {
 
     @Override
     public void execute(String[] args) {
-        // Parses command-line arguments to extract tree SHA, parent SHA, and commit message
-        String treeSha = null;
-        String parentSha = null;
-        String message = null;
-
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case COMMIT_TREE:
-                    treeSha = args[i + 1];
-                    i++;
-                    break;
-                case ARG_P:
-                    parentSha = args[i + 1];
-                    i++;
-                    break;
-                case ARG_M:
-                    message = args[i + 1];
-                    i++;
-                    break;
-            }
+        Map<String, String> argumentMap = new HashMap<>();
+        // Parse command-line arguments and populate the map
+        for (int i = 0; i < args.length - 1; i++) {
+            argumentMap.put(args[i], args[i + 1]);
+            i++;
         }
+        String treeSha = argumentMap.get(COMMIT_TREE);
+        String parentSha = argumentMap.get(ARG_P);
+        String message = argumentMap.get(ARG_M);
 
         // Validates required arguments and logs an error if they are missing
         if (treeSha == null || message == null) {
