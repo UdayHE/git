@@ -14,6 +14,11 @@ public class Clone implements Command {
 
     @Override
     public void execute(String[] args) throws Exception {
+        if (args.length != 3) {
+            log.log(Level.SEVERE, "Usage: clone <repository_url> <destination_directory>");
+            return;
+        }
+
         String repoUrl = args[1];
         String destinationDir = args[2];
 
@@ -32,9 +37,9 @@ public class Clone implements Command {
                     .setURI(repoUrl)
                     .setDirectory(repoDirectory)
                     .call();
-            System.out.println("Repository successfully cloned into: " + destinationDir);
+            log.log(Level.INFO, "Repository successfully cloned into: {0}", destinationDir);
         } catch (GitAPIException e) {
-            log.log(Level.SEVERE,"Error: Cloning failed - {0}" , e.getMessage());
+            log.log(Level.SEVERE, "Error: Cloning failed - {0}", e.getMessage());
         }
     }
 }
