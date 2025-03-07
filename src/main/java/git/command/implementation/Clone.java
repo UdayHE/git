@@ -41,7 +41,7 @@ public class Clone implements Command {
 
     private void clone(String repoUrl, File repoDirectory) {
         try {
-            String zipUrl = repoUrl.replace(".git", "") + "/archive/refs/heads/main.zip";
+            String zipUrl = getGitHubZipUrl(repoUrl);
             File tempZip = File.createTempFile("repo", ".zip");
             tempZip.deleteOnExit();
 
@@ -49,12 +49,25 @@ public class Clone implements Command {
             downloadFile(zipUrl, tempZip);
 
             log.log(Level.INFO, "Extracting repository...");
-            extractZip(tempZip, repoDirectory.getParentFile());
+            extractZip(tempZip, repoDirectory);
 
             log.log(Level.INFO, "Repository successfully cloned into: {0}", repoDirectory.getAbsolutePath());
         } catch (Exception e) {
             log.log(Level.SEVERE, "Error: Cloning failed - {0}", e.getMessage());
         }
+    }
+
+    private String getGitHubZipUrl(String repoUrl) throws IllegalArgumentException {
+        if (!repoUrl.startsWith("https://github.com/")) {
+            throw new IllegalArgumentException("Unsupported repository URL: " + repoUrl);
+        }
+        String[] parts = repoUrl.replace(".git", "").split("/");
+        if (parts.length < 5) {
+            throw new IllegalArgumentException("Invalid GitHub repository URL: " + repoUrl);
+        }
+        String owner = parts[3];
+        String repo = parts[4];
+        return "https://codeload.github.com/" + owner + "/" + repo + "/zip/main";
     }
 
     private void downloadFile(String fileURL, File destination) throws IOException {
