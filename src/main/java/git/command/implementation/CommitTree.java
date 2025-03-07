@@ -109,9 +109,8 @@ public class CommitTree implements Command {
 
     private String byteArrayToHex(byte[] bytes) {
         try (Formatter formatter = new Formatter()) {
-            for (byte b : bytes) {
+            for (byte b : bytes)
                 formatter.format(HEX_CHAR, b);
-            }
             return formatter.toString();
         }
     }
