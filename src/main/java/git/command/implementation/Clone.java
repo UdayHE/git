@@ -2,15 +2,17 @@ package git.command.implementation;
 
 import git.command.Command;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Clone implements Command {
 
@@ -41,33 +43,48 @@ public class Clone implements Command {
 
     private void clone(String repoUrl, File repoDirectory) {
         try {
-            String zipUrl = getGitHubZipUrl(repoUrl);
-            File tempZip = File.createTempFile("repo", ".zip");
-            tempZip.deleteOnExit();
+            if (!repoDirectory.mkdirs()) {
+                throw new IOException("Failed to create directory: " + repoDirectory.getAbsolutePath());
+            }
 
-            log.log(Level.INFO, "Downloading repository zip from: {0}", zipUrl);
-            downloadFile(zipUrl, tempZip);
-
-            log.log(Level.INFO, "Extracting repository...");
-            extractZip(tempZip, repoDirectory);
-
+            log.log(Level.INFO, "Fetching repository objects...");
+            downloadGitObjects(repoUrl, repoDirectory);
+            log.log(Level.INFO, "Checking out files...");
+            checkoutFiles(repoDirectory);
             log.log(Level.INFO, "Repository successfully cloned into: {0}", repoDirectory.getAbsolutePath());
         } catch (Exception e) {
             log.log(Level.SEVERE, "Error: Cloning failed - {0}", e.getMessage());
         }
     }
 
-    private String getGitHubZipUrl(String repoUrl) throws IllegalArgumentException {
-        if (!repoUrl.startsWith("https://github.com/")) {
-            throw new IllegalArgumentException("Unsupported repository URL: " + repoUrl);
+    private void downloadGitObjects(String repoUrl, File repoDirectory) throws IOException {
+        String gitDir = repoDirectory.getAbsolutePath() + "/.git";
+        new File(gitDir).mkdirs();
+
+        downloadFile(repoUrl + "/info/refs?service=git-upload-pack", new File(gitDir, "refs"));
+        downloadFile(repoUrl + "/objects/info/packs", new File(gitDir, "objects/info/packs"));
+        downloadFile(repoUrl + "/HEAD", new File(gitDir, "HEAD"));
+    }
+
+    private void checkoutFiles(File repoDirectory) throws IOException {
+        File headFile = new File(repoDirectory, ".git/HEAD");
+        if (!headFile.exists()) {
+            throw new IOException("Missing HEAD file, repository might be incomplete");
         }
-        String[] parts = repoUrl.replace(".git", "").split("/");
-        if (parts.length < 5) {
-            throw new IllegalArgumentException("Invalid GitHub repository URL: " + repoUrl);
+
+        String headRef = new String(Files.readAllBytes(headFile.toPath())).trim();
+        Pattern pattern = Pattern.compile("ref: (.+)");
+        Matcher matcher = pattern.matcher(headRef);
+        if (!matcher.find()) {
+            throw new IOException("Invalid HEAD reference");
         }
-        String owner = parts[3];
-        String repo = parts[4];
-        return "https://codeload.github.com/" + owner + "/" + repo + "/zip/main";
+        String branchRef = matcher.group(1);
+        File refFile = new File(repoDirectory, ".git/" + branchRef);
+        if (!refFile.exists()) {
+            throw new IOException("Missing reference file: " + branchRef);
+        }
+        String commitHash = new String(Files.readAllBytes(refFile.toPath())).trim();
+        log.log(Level.INFO, "Checked out commit: {0}", commitHash);
     }
 
     private void downloadFile(String fileURL, File destination) throws IOException {
@@ -81,24 +98,6 @@ public class Clone implements Command {
             int bytesRead;
             while ((bytesRead = in.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
-            }
-        }
-    }
-
-    private void extractZip(File zipFile, File destinationDir) throws IOException {
-        try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFile))) {
-            ZipEntry entry;
-            while ((entry = zipIn.getNextEntry()) != null) {
-                File newFile = new File(destinationDir, entry.getName());
-                if (entry.isDirectory()) {
-                    newFile.mkdirs();
-                } else {
-                    newFile.getParentFile().mkdirs();
-                    try (FileOutputStream out = new FileOutputStream(newFile)) {
-                        Files.copy(zipIn, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }
-                zipIn.closeEntry();
             }
         }
     }
