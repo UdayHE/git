@@ -5,26 +5,25 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Clone implements Command {
 
+    private static final Logger log = Logger.getLogger(Clone.class.getName());
+
     @Override
     public void execute(String[] args) throws Exception {
-//        if (args.length != 3) {
-//            System.err.println("Usage: clone <repository_url> <destination_directory>");
-//            return;
-//        }
-
         String repoUrl = args[1];
         String destinationDir = args[2];
 
-        System.out.println("Cloning repository: " + repoUrl);
-        System.out.println("Destination: " + destinationDir);
+        log.log(Level.INFO, "Cloning repository: {0}", repoUrl);
+        log.log(Level.INFO, "Destination: {0}", destinationDir);
 
         File repoDirectory = new File(destinationDir);
 
         if (repoDirectory.exists()) {
-            System.err.println("Error: Directory already exists.");
+            log.log(Level.SEVERE, "Error: Directory already exists.");
             return;
         }
 
