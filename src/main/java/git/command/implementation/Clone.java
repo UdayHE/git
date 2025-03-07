@@ -34,8 +34,7 @@ public class Clone implements Command {
                     .call();
             System.out.println("Repository successfully cloned into: " + destinationDir);
         } catch (GitAPIException e) {
-            System.err.println("Error: Cloning failed - " + e.getMessage());
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Error: Cloning failed - {0}" , e.getMessage());
         }
     }
 }
