@@ -9,6 +9,7 @@ public class Constant {
     public static final String ARG_M = "-m";
     public static final String OBJECTS_BASE_PATH = ".git/objects/%s/%s";
     public static final char NULL_CHAR = '\0';
+    public static final char EMPTY_CHAR = ' ';
 
     public static final String SHA_1 = "SHA-1";
     public static final String OBJECTS_PATH = ".git/objects/";
@@ -31,7 +32,6 @@ public class Constant {
     public static final String REFS = "refs";
     public static final String HEAD = "HEAD";
     public static final String CURRENT_DIR = ".";
-    public static final char EMPTY_CHAR = ' ';
     public static final String COMMIT_TREE = "commit-tree";
     public static final String PARENT = "parent ";
     public static final String AUTHOR = "author ";
